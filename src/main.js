@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: `${window.location.origin}/index.html`, // Replace with your desired page
+          redirectTo: `https://fdc3-83-243-222-96.ngrok-free.app/index.html`, // Replace with your desired page
         },
       });
   

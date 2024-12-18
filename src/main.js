@@ -7,7 +7,10 @@ Chart.register(...registerables);
 // Supabase Initialization
 const supabaseUrl = 'https://ynaebzwplirfhvoxrvnz.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluYWViendwbGlyZmh2b3hydm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzMDg4NTAsImV4cCI6MjA0OTg4NDg1MH0.Ac6HePbKTdeCVDWAe8KIZOO4iXzIuLODWKRzyhqmfpA';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: true },
+});
+
 
 // Main Script
 document.addEventListener("DOMContentLoaded", async () => {
@@ -28,77 +31,84 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closePopup = document.getElementById("closePopup");
   const loginForm = document.getElementById("loginForm");
   const discordLoginBtn = document.getElementById("discordLoginBtn");
-
-//Check if the user is logged in
-document.addEventListener('DOMContentLoaded', () => {
-  const discordLoginBtn = document.getElementById('discordLoginBtn');
   const logoutButton = document.getElementById('logoutBtn');
   const userWelcome = document.getElementById('userWelcome');
+  
+    //Ensure supabase restores session after the redirection
+    async function checkSession() {
 
-  discordLoginBtn.addEventListener('click', async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'discord',
-        options: {
-          redirectTo: `https://fdc3-83-243-222-96.ngrok-free.app/index.html`, // Replace with your desired page
-        },
-      });
+      //Force refresh the session
+      await supabase.auth.refreshSession();
+
+      const { data: session, error } = await supabase.auth.getSession();
+
+      console.log("Refreshed session data:", session);
+
+      //debug logs
+      console.log("Session data:", session);
+      if (session) {
+        console.log("Session user:", session.user);
+      }
   
       if (error) {
-        console.error('Error during Discord login:', error.message);
-        alert('Login failed. Please try again.');
+        console.error("Error fetching session: ", error.message);
+        return;
       }
-    } catch (err) {
-      console.error('Unexpected error:', err.message);
+  
+      if (session?.user) {
+        const userData = session.user;
+  
+        // Store user data in local storage
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log("User stored in local storage:", localStorage.getItem('user'));
+  
+        // Update UI
+        discordLoginBtn?.classList.add('hidden');
+        logoutButton?.classList.remove('hidden');
+        userWelcome.textContent = `Welcome, ${userData.user_metadata?.name || 'User'}!`;
+      } else {
+        console.log("No active session found");
+        // Update UI for guests
+        discordLoginBtn?.classList.remove('hidden');
+        logoutButton?.classList.add('hidden');
+        userWelcome.textContent = 'Welcome, Guest!';
+      }
     }
-  });
 
-  async function checkUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
 
-    if(error) {
-      console.error("Error fetching user: ", error.message);
-    }
-
-    if(user) {
-      //User is logged in
-      console.log('User is logged in:', user);
-
-      //update ui
-      loginBtn?.classList.add('hidden'); //Hide login button
-      logoutButton?.classList.remove('hidden'); //show logout button
-      userWelcome.textContent = `Welcome, ${user.user_metadata?.name || 'User'}!`;
-    } else {
-      //user is not logged in
-      console.log('No user logged in');
-      loginBtn?.classList.remove('hidden');
-      logoutButton?.classList.add('hidden');
-      userWelcome.textContent = 'Welcome, Guest!';
-    }
-  }
-
-    // Login with Discord
-    loginButton?.addEventListener('click', async () => {
-      await supabase.auth.signInWithOAuth({
-        provider: 'discord',
-        options: {
-          redirectTo: window.location.origin, // Redirect back to the same page
-        },
-      });
+    //Login with disc
+    discordLoginBtn?.addEventListener('click', async () => {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'discord',
+          options: {
+            redirectTo: `https://loquacious-bonbon-ac9300.netlify.app/index.html`, // Replace with your app's URL
+          },
+        });
+  
+        if (error) {
+          console.error("Error during Discord login:", error.message);
+          alert("Login failed. Please try again.");
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err.message);
+      }
     });
   
-    // Logout
+
+    //Logout functionality
     logoutButton?.addEventListener('click', async () => {
       await supabase.auth.signOut();
-      window.location.reload(); // Refresh page to show logged-out state
+      localStorage.removeItem('user');
+      console.log("User logged out and local storage cleared");
+      window.location.reload();
     });
   
-    // Run the checkUser function
-    await checkUser();
+    // run all functions on page load
+    await checkSession();
   });
-
-
-
+  
+  
   //Show the login popup when the login button is clicked
   loginBtn.addEventListener("click", () => {
     loginPopup.classList.remove("hidden");
@@ -108,21 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
   closePopup.addEventListener("click", () => {
     loginPopup.classList.add("hidden");
   });
-
-  // Fetch data from Supabase (Example)
-  async function fetchSupabaseData() {
-    try {
-      const { data, error } = await supabase.from('logify_user_table').select('*');
-      if (error) {
-        console.error("Supabase error:", error);
-      } else {
-        console.log("Supabase data fetched:", data);
-      }
-    } catch (err) {
-      console.error("Unexpected error fetching Supabase data:", err);
-    }
-  }
-  await fetchSupabaseData();
 
   // Add Card Button Logic
   if (addCardBtn && scrollContainer) {

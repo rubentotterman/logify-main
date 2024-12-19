@@ -13,11 +13,55 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: true },
 });
 
-// Main Script
+// Mock Supabase user object for local testing
+const mockUser = {
+  id: "123",
+  user_metadata: {
+    name: "Test User",
+  },
+};
+
+// Function to check user session
+async function checkSession() {
+  console.log("Checking session...");
+
+  // Check if running locally and use mock user
+  const isLocal = window.location.hostname === "localhost";
+  const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user;
+
+  if (user) {
+    console.log("User is logged in:", user);
+
+    // Update UI for logged-in state
+    const loginButton = document.getElementById("loginButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const userWelcome = document.getElementById("userWelcome");
+
+    loginButton?.classList.add("hidden");
+    logoutButton?.classList.remove("hidden");
+    userWelcome.textContent = `Welcome, ${user.user_metadata.name || "User"}!`;
+  } else {
+    console.log("No user logged in");
+
+    // Update UI for logged-out state
+    const loginButton = document.getElementById("loginButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const userWelcome = document.getElementById("userWelcome");
+
+    loginButton?.classList.remove("hidden");
+    logoutButton?.classList.add("hidden");
+    userWelcome.textContent = "Welcome, Guest!";
+  }
+}
+
+// Main Script: Ensure everything is loaded and then check session
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("DOMContentLoaded event fired.");
-  checkSession();
-  // DOM Elements
+
+  // Call checkSession to update UI based on user login status
+  await checkSession();
+
+  // DOM Elements for various interactions
   const scrollContainer = document.getElementById("scrollContainer");
   const addCardBtn = document.getElementById("addCardBtn");
   const hamburgerButton = document.getElementById("hamburgerButton");
@@ -25,32 +69,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const exitButton = document.getElementById("exit");
   const scrollLeftBtn = document.getElementById("scrollLeftBtn");
   const scrollRightBtn = document.getElementById("scrollRightBtn");
-  let workoutDaysElement = document.getElementById("workout-days");
-  const workoutBarChartCanvas = document.getElementById(
-    "workoutBarChartCanvas"
-  );
+  const workoutDaysElement = document.getElementById("workout-days");
+  const workoutBarChartCanvas = document.getElementById("workoutBarChartCanvas");
   const sleepChartCanvas = document.getElementById("sleepChartCanvas");
   const loginButton = document.getElementById("loginButton");
   const loginPopup = document.getElementById("loginPopup");
   const closePopup = document.getElementById("closePopup");
-  const loginForm = document.getElementById("loginForm");
   const discordLoginButton = document.getElementById("discordLoginButton");
   const logoutButton = document.getElementById("logoutBtn");
   const userWelcome = document.getElementById("userWelcome");
 
-    // Show popup when login button is clicked
-    loginButton.addEventListener("click", () => {
-      console.log("Main login button is clicked");
-      loginPopup.classList.remove("hidden");
-    });
-  
-    // Close popup when close button is clicked
-    closePopup.addEventListener("click", () => {
-      console.log("Close button is clicked");
-      loginPopup.classList.add("hidden");
-    });
+  // Show popup when login button is clicked
+  loginButton?.addEventListener("click", () => {
+    console.log("Main login button is clicked");
+    loginPopup.classList.remove("hidden");
+  });
 
-  //Login with disc
+  // Close popup when close button is clicked
+  closePopup?.addEventListener("click", () => {
+    console.log("Close button is clicked");
+    loginPopup.classList.add("hidden");
+  });
+
+  // Login with Discord
   discordLoginButton?.addEventListener("click", async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -69,47 +110,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  console.log("Script is running...");
+  // Logout functionality
+  logoutButton?.addEventListener("click", async () => {
+    console.log("Logout button clicked");
+    await supabase.auth.signOut(); // Clear Supabase session
+    localStorage.removeItem("user"); // Clear local storage
+    window.location.reload(); // Reload the page to update UI
+  });
 
-
-  //Ensure supabase restores session after the redirection
-  async function checkSession() {
-    console.log("Checking session...");
-  
-    // Refresh the session
-    const { error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError) {
-      console.error("Error refreshing session:", refreshError.message);
-      return; // Stop execution if the refresh fails
-    }
-  
-    // Get the current session
-    const { data: session, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error("Error fetching session:", error.message);
-      return; // Stop execution if fetching the session fails
-    }
-  
-    console.log("Session data:", session);
-  
-    if (session?.user) {
-      const userData = session.user;
-      console.log("User is logged in:", userData);
-    
-      // Store user data in local storage
-      localStorage.setItem("user", JSON.stringify(userData));
-      console.log("User stored in local storage:", localStorage.getItem("user"));
-    
-      // Update UI or perform additional logic here
-      loginButton?.classList.add("hidden");
-      logoutButton?.classList.remove("hidden");
-    } else {
-      console.log("No active session found.");
-      // Handle guest logic here
-    };
-    
-
-  // Workout Chart
+  // Charts (Workout Chart)
   if (workoutBarChartCanvas) {
     const ctx = workoutBarChartCanvas.getContext("2d");
     new Chart(ctx, {
@@ -144,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Example Data: Days worked out this year
+  // Workout Days Example Data
   const workedOutDays = [
     "2024-01-01",
     "2024-01-03",
@@ -240,15 +249,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  //Logout functionality
-  logoutButton?.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("user");
-    console.log("User logged out and local storage cleared");
-    window.location.reload();
-  });
-
-  // run all functions on page load
+  // Ensure supabase restores session after the redirection
   await checkSession();
-  }
 });

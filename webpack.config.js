@@ -8,8 +8,8 @@ const Dotenv = require("dotenv-webpack");
 module.exports = {
   entry: "./src/main.js", // Entry point
   output: {
-    filename: "bundle.js", // Output JavaScript file
     path: path.resolve(__dirname, "dist"), // Output folder
+    filename: "bundle.js", // Output JavaScript file
     publicPath: "/", // Ensure assets are served correctly
   },
   mode: "development", // Switch to "production" for production builds

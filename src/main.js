@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const { data: session, error } = await supabase.auth.getSession();
 
-      console.log("Refreshed session data:", session);
 
       //debug logs
       console.log("Session data:", session);

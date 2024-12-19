@@ -4,7 +4,6 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 
-
 module.exports = {
   entry: "./src/main.js", // Entry point
   output: {
@@ -26,24 +25,26 @@ module.exports = {
     ],
   },
   plugins: [
-    new CleanWebpackPlugin(), // Cleans dist folder before each build
+    // Apply CleanWebpackPlugin only in production mode
+    ...(process.env.NODE_ENV === "production" ? [new CleanWebpackPlugin()] : []),
     new MiniCssExtractPlugin({
       filename: "styles.css", // Extracted CSS filename
     }),
     new HtmlWebpackPlugin({
       template: "./src/index.html", // Use your existing index.html
     }),
-    new Dotenv(), //Load environment variables from .env
+    new Dotenv(), // Load environment variables from .env
   ],
   resolve: {
     extensions: [".js", ".json"], // Automatically resolve these extensions
   },
   devServer: {
     static: {
-      directory: path.resolve(__dirname, "dist"), // Serve from dist folder
+      directory: path.resolve(__dirname, 'dist'), // Serve from dist folder
     },
-    compress: true,
-    port: 8080,
-    historyApiFallback: true, // For Single Page Applications
+    hot: true, // Enable hot module replacement
+    port: 8080, // Port number
+    historyApiFallback: true, // Handle client-side routing (SPAs)
+    open: true, // Open the browser automatically
   },
 };

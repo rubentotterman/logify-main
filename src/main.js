@@ -52,7 +52,6 @@ async function checkSession() {
 
     loginButton?.classList.remove("hidden");
     logoutButton?.classList.add("hidden");
-    userWelcome.textContent = "Welcome, Guest!";
   }
 }
 

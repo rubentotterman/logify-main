@@ -26,7 +26,7 @@ async function checkSession() {
   console.log("Checking session...");
 
   // Check if running locally and use mock user
-  const isLocal = window.location.hostname === "localhost";
+  const isLocal = window.location.hostname === "localhost"; //True if running locally
   const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user;
 
   if (user) {
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
         options: {
-          redirectTo: `https://loquacious-bonbon-ac9300.netlify.app/index.html`, // Replace with your app's URL
+          redirectTo: window.location.href, // redirect to current page after login
         },
       });
 

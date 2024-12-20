@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const discordLoginButton = document.getElementById("discordLoginButton");
   const logoutButton = document.getElementById("logoutBtn");
   const userWelcome = document.getElementById("userWelcome");
-  const userHello = document.getElementById("userHello");
+  const basicHello = document.getElementById("basicHello");
 
   // Show popup when login button is clicked
   loginButton?.addEventListener("click", () => {

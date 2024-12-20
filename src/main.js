@@ -36,10 +36,12 @@ async function checkSession() {
     const loginButton = document.getElementById("loginButton");
     const logoutButton = document.getElementById("logoutButton");
     const userWelcome = document.getElementById("userWelcome");
+    const basicHello = document.getElementById("basicHello");
 
     loginButton?.classList.add("hidden");
     logoutButton?.classList.remove("hidden");
-    userWelcome.textContent = `Welcome, ${user.user_metadata.name || "User"}!`;
+    userWelcome?.classList.remove("hidden");
+    basicHello?.classList.add("hidden");
   } else {
     console.log("No user logged in");
 
@@ -78,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const discordLoginButton = document.getElementById("discordLoginButton");
   const logoutButton = document.getElementById("logoutBtn");
   const userWelcome = document.getElementById("userWelcome");
+  const userHello = document.getElementById("userHello");
 
   // Show popup when login button is clicked
   loginButton?.addEventListener("click", () => {
@@ -90,6 +93,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("Close button is clicked");
     loginPopup.classList.add("hidden");
   });
+
+
 
   // Login with Discord
   discordLoginButton?.addEventListener("click", async () => {

@@ -108,6 +108,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (error) {
         console.error("Error during Discord login:", error.message);
         alert("Login failed. Please try again.");
+      } else {
+        console.log("User logged in successfully");
+        await checkSession(); // After login, check session again to update UI
       }
     } catch (err) {
       console.error("Unexpected error:", err.message);

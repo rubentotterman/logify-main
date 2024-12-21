@@ -13,11 +13,12 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: true },
 });
 
-
-
 // Main Script: Ensure everything is loaded and then check session
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("DOMContentLoaded event fired.");
+
+  // Call checkSession to update UI based on user login status
+  await checkSession();
 
   // DOM Elements for various interactions
   const scrollContainer = document.getElementById("scrollContainer");
@@ -38,21 +39,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userWelcome = document.getElementById("userWelcome");
   const basicHello = document.getElementById("basicHello");
 
+  // Check if discordLoginButton exists in DOM
+  if (!discordLoginButton) {
+    console.error("discordLoginButton not found in the DOM!");
+    return;
+  }
+
   // Mock Supabase user object for local testing
-const mockUser = {
-  id: "123",
-  user_metadata: {
-    name: "Test User",
-  },
-};
+  const mockUser = {
+    id: "123",
+    user_metadata: {
+      name: "Test User",
+    },
+  };
 
-  // Function to update UI based on session state
+  // Function to check user session and update the UI
+  async function checkSession() {
+    console.log("Checking session...");
+
+    // Check if running locally and use mock user
+    const isLocal = window.location.hostname === "localhost"; // True if running locally
+    const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user; // Refresh session to get the latest user data
+
+    // Update the UI based on user session
+    updateUI(user);
+  }
+
+  // Function to update the UI based on user session
   function updateUI(user) {
-    const loginButton = document.getElementById("loginButton");
-    const logoutButton = document.getElementById("logoutButton");
-    const userWelcome = document.getElementById("userWelcome");
-    const basicHello = document.getElementById("basicHello");
-
     if (user) {
       console.log("User is logged in:", user);
       loginButton?.classList.add("hidden");
@@ -68,74 +82,46 @@ const mockUser = {
     }
   }
 
-  // Check session on page load and after login/logout
-  async function checkSession() {
-    console.log("Checking session...");
-    const session = supabase.auth.session();
+  // Login with Discord
+  discordLoginButton?.addEventListener("click", async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "discord",
+        options: {
+          redirectTo: window.location.href, // redirect back to current page after login
+        },
+      });
 
-    if (session?.user) {
-      updateUI(session.user);
-    } else {
-      updateUI(null);
+      if (error) {
+        console.error("Error during Discord login:", error.message);
+        alert("Login failed. Please try again.");
+      } else {
+        console.log("User logged in successfully");
+        await checkSession(); // After login, check session again to update UI
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err.message);
     }
-  }
-
-  // Check session initially to set the correct UI
-  await checkSession();
-
-  // Listen for session changes using Supabase's onAuthStateChange
-  supabase.auth.onAuthStateChange((event, session) => {
-    console.log("Auth state change:", event);
-    updateUI(session?.user || null);
   });
 
-  // Handle login with Discord
-  if (discordLoginButton) {
-    discordLoginButton.addEventListener("click", async () => {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "discord",
-          options: {
-            redirectTo: window.location.href, // Redirect back to the current page after login
-          },
-        });
-
-        if (error) {
-          console.error("Error during Discord login:", error.message);
-          alert("Login failed. Please try again.");
-        } else {
-          console.log("User logged in successfully");
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err.message);
-      }
-    });
-  }
-
-  // Handle logout functionality
-  if (logoutButton) {
-    logoutButton.addEventListener("click", async () => {
-      console.log("Logout button clicked");
-      await supabase.auth.signOut(); // Clear Supabase session
-      window.location.reload(); // Reload the page to update UI
-    });
-  }
+  // Logout functionality
+  logoutButton?.addEventListener("click", async () => {
+    console.log("Logout button clicked");
+    await supabase.auth.signOut(); // Clear Supabase session
+    window.location.reload(); // Reload the page to update UI
+  });
 
   // Show login popup when login button is clicked
-  if (loginButton) {
-    loginButton.addEventListener("click", () => {
-      console.log("Main login button is clicked");
-      loginPopup.classList.remove("hidden");
-    });
-  }
+  loginButton?.addEventListener("click", () => {
+    console.log("Main login button is clicked");
+    loginPopup.classList.remove("hidden");
+  });
 
   // Close popup when close button is clicked
-  if (closePopup) {
-    closePopup.addEventListener("click", () => {
-      console.log("Close button is clicked");
-      loginPopup.classList.add("hidden");
-    });
-  }
+  closePopup?.addEventListener("click", () => {
+    console.log("Close button is clicked");
+    loginPopup.classList.add("hidden");
+  });
 
   // Charts (Workout Chart)
   if (workoutBarChartCanvas) {

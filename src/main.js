@@ -4,14 +4,6 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 
-// Supabase Initialization
-const supabaseUrl = "https://ynaebzwplirfhvoxrvnz.supabase.co";
-const supabaseKey =
-  process.env.SUPABASE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluYWViendwbGlyZmh2b3hydm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzMDg4NTAsImV4cCI6MjA0OTg4NDg1MH0.Ac6HePbKTdeCVDWAe8KIZOO4iXzIuLODWKRzyhqmfpA";
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: true },
-});
 
 // Main Script: Ensure everything is loaded and then check session
 document.addEventListener("DOMContentLoaded", async () => {
@@ -38,6 +30,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   const logoutButton = document.getElementById("logoutBtn");
   const userWelcome = document.getElementById("userWelcome");
   const basicHello = document.getElementById("basicHello");
+
+
+
+  // Supabase Initialization
+const supabaseUrl = "https://ynaebzwplirfhvoxrvnz.supabase.co";
+const supabaseKey =
+  process.env.SUPABASE_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluYWViendwbGlyZmh2b3hydm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzMDg4NTAsImV4cCI6MjA0OTg4NDg1MH0.Ac6HePbKTdeCVDWAe8KIZOO4iXzIuLODWKRzyhqmfpA";
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: true },
+});
+
 
   // Check if discordLoginButton exists in DOM
   if (!discordLoginButton) {

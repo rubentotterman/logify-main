@@ -9,7 +9,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"), // Output folder
     filename: "bundle.js", // Output JavaScript file
-    publicPath: "/", // Ensure assets are served correctly
+    publicPath: "", // Ensure assets are served correctly
   },
   mode: "development", // Switch to "production" for production builds
   module: {

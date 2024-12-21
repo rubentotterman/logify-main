@@ -13,7 +13,38 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: true },
 });
 
-// Mock Supabase user object for local testing
+
+
+
+// Main Script: Ensure everything is loaded and then check session
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOMContentLoaded event fired.");
+
+  // Call checkSession to update UI based on user login status
+  await checkSession();
+
+  // DOM Elements for various interactions
+  const scrollContainer = document.getElementById("scrollContainer");
+  const addCardBtn = document.getElementById("addCardBtn");
+  const hamburgerButton = document.getElementById("hamburgerButton");
+  const mobileMenu = document.getElementById("mobileMenu");
+  const exitButton = document.getElementById("exit");
+  const scrollLeftBtn = document.getElementById("scrollLeftBtn");
+  const scrollRightBtn = document.getElementById("scrollRightBtn");
+  const workoutDaysElement = document.getElementById("workout-days");
+  const workoutBarChartCanvas = document.getElementById("workoutBarChartCanvas");
+  const sleepChartCanvas = document.getElementById("sleepChartCanvas");
+  const loginButton = document.getElementById("loginButton");
+  const loginPopup = document.getElementById("loginPopup");
+  const closePopup = document.getElementById("closePopup");
+  const discordLoginButton = document.getElementById("discordLoginButton");
+  const logoutButton = document.getElementById("logoutBtn");
+  const userWelcome = document.getElementById("userWelcome");
+  const basicHello = document.getElementById("basicHello");
+
+
+
+  // Mock Supabase user object for local testing
 const mockUser = {
   id: "123",
   user_metadata: {
@@ -56,34 +87,6 @@ async function checkSession() {
   userWelcome?.classList.remove("hidden");
   basicHello?.classList.add("hidden");
 }
-
-
-// Main Script: Ensure everything is loaded and then check session
-document.addEventListener("DOMContentLoaded", async () => {
-  console.log("DOMContentLoaded event fired.");
-
-  // Call checkSession to update UI based on user login status
-  await checkSession();
-
-  // DOM Elements for various interactions
-  const scrollContainer = document.getElementById("scrollContainer");
-  const addCardBtn = document.getElementById("addCardBtn");
-  const hamburgerButton = document.getElementById("hamburgerButton");
-  const mobileMenu = document.getElementById("mobileMenu");
-  const exitButton = document.getElementById("exit");
-  const scrollLeftBtn = document.getElementById("scrollLeftBtn");
-  const scrollRightBtn = document.getElementById("scrollRightBtn");
-  const workoutDaysElement = document.getElementById("workout-days");
-  const workoutBarChartCanvas = document.getElementById("workoutBarChartCanvas");
-  const sleepChartCanvas = document.getElementById("sleepChartCanvas");
-  const loginButton = document.getElementById("loginButton");
-  const loginPopup = document.getElementById("loginPopup");
-  const closePopup = document.getElementById("closePopup");
-  const discordLoginButton = document.getElementById("discordLoginButton");
-  const logoutButton = document.getElementById("logoutBtn");
-  const userWelcome = document.getElementById("userWelcome");
-  const basicHello = document.getElementById("basicHello");
-
 
 
    // Login with Discord

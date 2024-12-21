@@ -15,13 +15,9 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 
 
-
 // Main Script: Ensure everything is loaded and then check session
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("DOMContentLoaded event fired.");
-
-  // Call checkSession to update UI based on user login status
-  await checkSession();
 
   // DOM Elements for various interactions
   const scrollContainer = document.getElementById("scrollContainer");
@@ -42,8 +38,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userWelcome = document.getElementById("userWelcome");
   const basicHello = document.getElementById("basicHello");
 
-
-
   // Mock Supabase user object for local testing
 const mockUser = {
   id: "123",
@@ -52,86 +46,96 @@ const mockUser = {
   },
 };
 
-// Function to check user session and update the UI
-async function checkSession() {
-  console.log("Checking session...");
-
-  // Check if running locally and use mock user
-  const isLocal = window.location.hostname === "localhost"; //True if running locally
-  const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user; //Refresh the session to ensure its up-to-ate after login
-
-  if (!user) {
-    console.log("No user logged in");
-  
-
-    //Update UI for logged-out state
+  // Function to update UI based on session state
+  function updateUI(user) {
     const loginButton = document.getElementById("loginButton");
     const logoutButton = document.getElementById("logoutButton");
     const userWelcome = document.getElementById("userWelcome");
-    loginButton?.classList.remove("hidden");
-    logoutButton?.classList.add("hidden");
-    userWelcome?.classList.add("hidden");
+    const basicHello = document.getElementById("basicHello");
 
-    return; // if there is no user, exit the function here
+    if (user) {
+      console.log("User is logged in:", user);
+      loginButton?.classList.add("hidden");
+      logoutButton?.classList.remove("hidden");
+      userWelcome?.classList.remove("hidden");
+      userWelcome.textContent = `Welcome, ${user.user_metadata?.name || "User"}!`;
+      basicHello?.classList.add("hidden");
+    } else {
+      console.log("No user logged in");
+      loginButton?.classList.remove("hidden");
+      logoutButton?.classList.add("hidden");
+      userWelcome?.classList.add("hidden");
+    }
   }
 
-      // Update UI for logged-in state
-  const loginButton = document.getElementById("loginButton");
-  const logoutButton = document.getElementById("logoutButton");
-  const userWelcome = document.getElementById("userWelcome");
-  const basicHello = document.getElementById("basicHello");
+  // Check session on page load and after login/logout
+  async function checkSession() {
+    console.log("Checking session...");
+    const session = supabase.auth.session();
 
-  loginButton?.classList.add("hidden");
-  logoutButton?.classList.remove("hidden");
-  userWelcome?.classList.remove("hidden");
-  userWelcome?.classList.remove("hidden");
-  basicHello?.classList.add("hidden");
-}
-
-
-   // Login with Discord
-   discordLoginButton?.addEventListener("click", async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "discord",
-        options: {
-          redirectTo: window.location.href, // redirect back to current page after login
-        },
-      });
-
-      if (error) {
-        console.error("Error during Discord login:", error.message);
-        alert("Login failed. Please try again.");
-      } else {
-        console.log("User logged in successfully");
-        await checkSession(); // After login, check session again to update UI
-      }
-    } catch (err) {
-      console.error("Unexpected error:", err.message);
+    if (session?.user) {
+      updateUI(session.user);
+    } else {
+      updateUI(null);
     }
+  }
+
+  // Check session initially to set the correct UI
+  await checkSession();
+
+  // Listen for session changes using Supabase's onAuthStateChange
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.log("Auth state change:", event);
+    updateUI(session?.user || null);
   });
 
-   // Logout functionality
-   logoutButton?.addEventListener("click", async () => {
-    console.log("Logout button clicked");
-    await supabase.auth.signOut(); // Clear Supabase session
-    localStorage.removeItem("user"); // Clear local storage
-    window.location.reload(); // Reload the page to update UI
-  });
+  // Handle login with Discord
+  if (discordLoginButton) {
+    discordLoginButton.addEventListener("click", async () => {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "discord",
+          options: {
+            redirectTo: window.location.href, // Redirect back to the current page after login
+          },
+        });
 
-  // Show popup when login button is clicked
-  loginButton?.addEventListener("click", () => {
-    console.log("Main login button is clicked");
-    loginPopup.classList.remove("hidden");
-  });
+        if (error) {
+          console.error("Error during Discord login:", error.message);
+          alert("Login failed. Please try again.");
+        } else {
+          console.log("User logged in successfully");
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err.message);
+      }
+    });
+  }
+
+  // Handle logout functionality
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      console.log("Logout button clicked");
+      await supabase.auth.signOut(); // Clear Supabase session
+      window.location.reload(); // Reload the page to update UI
+    });
+  }
+
+  // Show login popup when login button is clicked
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      console.log("Main login button is clicked");
+      loginPopup.classList.remove("hidden");
+    });
+  }
 
   // Close popup when close button is clicked
-  closePopup?.addEventListener("click", () => {
-    console.log("Close button is clicked");
-    loginPopup.classList.add("hidden");
-  });
-
-
+  if (closePopup) {
+    closePopup.addEventListener("click", () => {
+      console.log("Close button is clicked");
+      loginPopup.classList.add("hidden");
+    });
+  }
 
   // Charts (Workout Chart)
   if (workoutBarChartCanvas) {
@@ -263,5 +267,4 @@ async function checkSession() {
       });
     });
   }
-
 });

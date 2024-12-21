@@ -21,13 +21,19 @@ const mockUser = {
   },
 };
 
-// Function to check user session
+// Function to check user session and update the UI
 async function checkSession() {
   console.log("Checking session...");
 
   // Check if running locally and use mock user
   const isLocal = window.location.hostname === "localhost"; //True if running locally
-  const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user;
+  const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user; //Refresh the session to ensure its up-to-ate after login
+
+  if (error) {
+    console.error("error fetching sess:", error.message);
+    return;
+  }
+
 
   if (user) {
     console.log("User is logged in:", user);
@@ -52,6 +58,7 @@ async function checkSession() {
 
     loginButton?.classList.remove("hidden");
     logoutButton?.classList.add("hidden");
+    userWelcome?.classList.add("hidden");
   }
 }
 
@@ -81,27 +88,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userWelcome = document.getElementById("userWelcome");
   const basicHello = document.getElementById("basicHello");
 
-  // Show popup when login button is clicked
-  loginButton?.addEventListener("click", () => {
-    console.log("Main login button is clicked");
-    loginPopup.classList.remove("hidden");
-  });
-
-  // Close popup when close button is clicked
-  closePopup?.addEventListener("click", () => {
-    console.log("Close button is clicked");
-    loginPopup.classList.add("hidden");
-  });
 
 
-
-  // Login with Discord
-  discordLoginButton?.addEventListener("click", async () => {
+   // Login with Discord
+   discordLoginButton?.addEventListener("click", async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "discord",
         options: {
-          redirectTo: window.location.href, // redirect to current page after login
+          redirectTo: window.location.href, // redirect back to current page after login
         },
       });
 
@@ -117,13 +112,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Logout functionality
-  logoutButton?.addEventListener("click", async () => {
+   // Logout functionality
+   logoutButton?.addEventListener("click", async () => {
     console.log("Logout button clicked");
     await supabase.auth.signOut(); // Clear Supabase session
     localStorage.removeItem("user"); // Clear local storage
     window.location.reload(); // Reload the page to update UI
   });
+
+  // Show popup when login button is clicked
+  loginButton?.addEventListener("click", () => {
+    console.log("Main login button is clicked");
+    loginPopup.classList.remove("hidden");
+  });
+
+  // Close popup when close button is clicked
+  closePopup?.addEventListener("click", () => {
+    console.log("Close button is clicked");
+    loginPopup.classList.add("hidden");
+  });
+
+
 
   // Charts (Workout Chart)
   if (workoutBarChartCanvas) {

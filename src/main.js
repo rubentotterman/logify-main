@@ -29,38 +29,34 @@ async function checkSession() {
   const isLocal = window.location.hostname === "localhost"; //True if running locally
   const user = isLocal ? mockUser : (await supabase.auth.getSession())?.data?.user; //Refresh the session to ensure its up-to-ate after login
 
-  if (error) {
-    console.error("error fetching sess:", error.message);
-    return;
-  }
-
-
-  if (user) {
-    console.log("User is logged in:", user);
-
-    // Update UI for logged-in state
-    const loginButton = document.getElementById("loginButton");
-    const logoutButton = document.getElementById("logoutButton");
-    const userWelcome = document.getElementById("userWelcome");
-    const basicHello = document.getElementById("basicHello");
-
-    loginButton?.classList.add("hidden");
-    logoutButton?.classList.remove("hidden");
-    userWelcome?.classList.remove("hidden");
-    basicHello?.classList.add("hidden");
-  } else {
+  if (!user) {
     console.log("No user logged in");
+  
 
-    // Update UI for logged-out state
+    //Update UI for logged-out state
     const loginButton = document.getElementById("loginButton");
     const logoutButton = document.getElementById("logoutButton");
     const userWelcome = document.getElementById("userWelcome");
-
     loginButton?.classList.remove("hidden");
     logoutButton?.classList.add("hidden");
     userWelcome?.classList.add("hidden");
+
+    return; // if there is no user, exit the function here
   }
+
+      // Update UI for logged-in state
+  const loginButton = document.getElementById("loginButton");
+  const logoutButton = document.getElementById("logoutButton");
+  const userWelcome = document.getElementById("userWelcome");
+  const basicHello = document.getElementById("basicHello");
+
+  loginButton?.classList.add("hidden");
+  logoutButton?.classList.remove("hidden");
+  userWelcome?.classList.remove("hidden");
+  userWelcome?.classList.remove("hidden");
+  basicHello?.classList.add("hidden");
 }
+
 
 // Main Script: Ensure everything is loaded and then check session
 document.addEventListener("DOMContentLoaded", async () => {
@@ -265,6 +261,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Ensure supabase restores session after the redirection
-  await checkSession();
 });
